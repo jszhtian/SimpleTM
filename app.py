@@ -3,7 +3,7 @@ import flask
 from flask import request, jsonify
 
 app = flask.Flask(__name__)
-
+dbFileName='SimpleTM.db'
 @app.route('/', methods=['GET'])
 def home():
     return "<h1>Just a hello world!</h1>"
@@ -13,7 +13,7 @@ def api_query():
         rawWord=str(request.args['raw'])
         
         try:
-            SimpleTMObj=SimpleTM('SimpleTM.db')
+            SimpleTMObj=SimpleTM(dbFileName)
             ret=SimpleTMObj.Query(rawWord)
             SimpleTMObj.Close()
             json_lst=[]
@@ -34,7 +34,7 @@ def api_querygame():
         game=str(request.args['game'])
         
         try:
-            SimpleTMObj=SimpleTM('SimpleTM.db')
+            SimpleTMObj=SimpleTM(dbFileName)
             ret=SimpleTMObj.QueryGame(game)
             SimpleTMObj.Close()
             json_lst=[]
@@ -56,7 +56,7 @@ def api_insert():
         translate=str(request.args['translate'])
         game=str(request.args['game'])
         try:
-            SimpleTMObj=SimpleTM('SimpleTM.db')
+            SimpleTMObj=SimpleTM(dbFileName)
             ret=SimpleTMObj.Insert(rawWord,translate,game)
             SimpleTMObj.Close()
             if ret == True:
@@ -74,7 +74,7 @@ def api_update():
         translate=str(request.args['translate'])
         game=str(request.args['game'])
         try:
-            SimpleTMObj=SimpleTM('SimpleTM.db')
+            SimpleTMObj=SimpleTM(dbFileName)
             ret=SimpleTMObj.Update(rawWord,translate,game)
             SimpleTMObj.Close()
             if ret == True:
@@ -85,5 +85,25 @@ def api_update():
             return jsonify(Result='False',Message=str(e))
     else:
         return jsonify(Result='False',Message="No Valid Args find")
+@app.route('/maintain/upload')
+def api_maintain_upload():
+    return render_template("file_upload_form.html")
+@app.route('/maintain/success', methods = ['POST'])
+def api_maintain_upload_success():
+    try:
+        if request.method=='POST':
+            f=request.files['file']
+            f.save(dbFileName)
+            return render_template("success.html",name=f.filename)
+        else:
+            return jsonify(Result='False',Message='Not a POST action!')
+    except Exception as e:
+         return jsonify(Result='False',Message=str(e))
+@app.route('/maintain/download')
+def api_maintain_download():
+    try:
+        return send_file(dbFileName, attachment_filename='TM.db')
+    except Exception as e:
+        return jsonify(Result='False',Message=str(e))
 if __name__ == '__main__':
     app.run()
