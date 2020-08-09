@@ -1,6 +1,6 @@
 from SimpleTM import SimpleTM
 import flask
-from flask import request, jsonify
+from flask import request, jsonify, render_template,send_file
 
 app = flask.Flask(__name__)
 dbFileName='SimpleTM.db'
