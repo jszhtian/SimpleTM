@@ -45,6 +45,20 @@ class SimpleTM:
         except Error as e:
             raise RuntimeError(e)
 
+    def QueryGame(self,game):
+        try:
+            c=self.__conn.cursor()
+            c.execute('''
+            select RawWord,TranslatedWord,GameTitle
+            from SimpleTM
+            where instr(?,GameTitle) > 0
+            ''',(game.lower(),))
+            self.__conn.commit()
+            rows=c.fetchall()
+            return rows
+        except Error as e:
+            raise RuntimeError(e)
+
     def Insert(self,sRawWord,sTranslatedWord,sGameTitle):
         try:
             c=self.__conn.cursor()
@@ -90,4 +104,5 @@ if __name__ == "__main__":
         print(e)
     print(objSimpleTM.Update('Test','测试2','TestGame1'))
     print(objSimpleTM.Update('Test','测试3','TestGame1'))
+    print(objSimpleTM.QueryGame('TestGame1'))
     print(objSimpleTM.Query('reason'))
