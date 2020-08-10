@@ -45,14 +45,26 @@ class SimpleTM:
         except Error as e:
             raise RuntimeError(e)
 
-    def QueryGame(self,game):
+    def QueryByGame(self,game):
         try:
             c=self.__conn.cursor()
             c.execute('''
             select RawWord,TranslatedWord,GameTitle
             from SimpleTM
-            where instr(?,GameTitle) > 0
+            where GameTitle like ?
             ''',(game.lower(),))
+            self.__conn.commit()
+            rows=c.fetchall()
+            return rows
+        except Error as e:
+            raise RuntimeError(e)
+    def QueryGame(self):
+        try:
+            c=self.__conn.cursor()
+            c.execute('''
+            select distinct GameTitle
+            from SimpleTM
+            ''')
             self.__conn.commit()
             rows=c.fetchall()
             return rows
