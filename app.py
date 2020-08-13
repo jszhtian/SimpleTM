@@ -26,21 +26,6 @@ def api_query(rawWord):
     except Exception as e:
         return jsonify(Result='False', Message=str(e))
 
-@app.route('/api/querygame', methods=['GET'])
-def api_querygame():
-    try:
-        SimpleTMObj = SimpleTM(dbFileName)
-        ret = SimpleTMObj.QueryGame()
-        SimpleTMObj.Close()
-        json_lst = []
-        for line in ret:
-            tmp_json_dict = {}
-            tmp_json_dict['game:'] = line[0]
-            json_lst.append(tmp_json_dict)
-        return jsonify(json_lst)
-    except Exception as e:
-        return jsonify(Result='False', Message=str(e))
-
 @app.route('/api/querybygame/<string:game>', methods=['GET'])
 def api_querybygame(game):
     try:
@@ -114,4 +99,4 @@ def api_maintain_download():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
