@@ -18,9 +18,9 @@ def api_query(rawWord):
         json_lst = []
         for line in ret:
             tmp_json_dict = {}
-            tmp_json_dict['raw:'] = line[0]
-            tmp_json_dict['translate:'] = line[1]
-            tmp_json_dict['game:'] = line[2]
+            tmp_json_dict['raw'] = line[0]
+            tmp_json_dict['translate'] = line[1]
+            tmp_json_dict['game'] = line[2]
             json_lst.append(tmp_json_dict)
         return jsonify(json_lst)
     except Exception as e:
@@ -35,9 +35,9 @@ def api_querybygame(game):
         json_lst = []
         for line in ret:
             tmp_json_dict = {}
-            tmp_json_dict['raw:'] = line[0]
-            tmp_json_dict['translate:'] = line[1]
-            tmp_json_dict['game:'] = line[2]
+            tmp_json_dict['raw'] = line[0]
+            tmp_json_dict['translate'] = line[1]
+            tmp_json_dict['game'] = line[2]
             json_lst.append(tmp_json_dict)
         return jsonify(json_lst)
     except Exception as e:
