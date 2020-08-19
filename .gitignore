@@ -1,2 +1,4 @@
 __pycache__/
 SimpleTM.db
+node_modules/
+.vscode/
