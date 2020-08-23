@@ -9,36 +9,36 @@ class SimpleTM:
         self.__sSqliteFileName=sSqliteFileName
         isExist=os.path.isfile(sSqliteFileName)
         if(isExist==False):
-            self.__InitSQLite(self.__sSqliteFileName)
+            self.__InitSQLite()
         try:
             self.__conn=sqlite3.connect(self.__sSqliteFileName)
         except Error as e:
             raise RuntimeError(e)
-    def __InitSQLite(self,sSqliteFileName):
+    def __InitSQLite(self):
         try:
             self.__conn=sqlite3.connect(self.__sSqliteFileName)
-            c=self.__conn.cursor()
-            c.execute('''
-            CREATE TABLE SimpleTM
-            (
-                GameTitle text,
-                RawWord text,
-                TranslatedWord text,
-                unique (GameTitle,RawWord) 
-            )
-            ''')
+            c = self.__conn.cursor()
+            f = open('init_db.sql', encoding='utf-8')
+            statements = f.read().split(';')
+            for s in statements:
+                #print(s)
+                c.execute(s)
             self.__conn.commit()
             self.__conn.close()
         except Error as e:
             raise RuntimeError(e)
-    def Query(self,sRawWord):
+    def __GetCursor(self):
+            c = self.__conn.cursor()
+            c.execute('PRAGMA foreign_keys = ON')
+            return c
+    def Query(self, game, raw):
         try:
-            c=self.__conn.cursor()
+            c = self.__GetCursor()
             c.execute('''
-            select RawWord,TranslatedWord,GameTitle
-            from SimpleTM
-            where instr(?,RawWord) > 0
-            ''',(sRawWord.lower(),))
+                SELECT raw_word, trans_word
+                FROM Translate
+                WHERE game_id=? AND raw_word=?''',
+                (game, raw,))
             self.__conn.commit()
             rows=c.fetchall()
             return rows
@@ -47,12 +47,12 @@ class SimpleTM:
 
     def QueryByGame(self,game):
         try:
-            c=self.__conn.cursor()
+            c = self.__GetCursor()
             c.execute('''
-            select RawWord,TranslatedWord,GameTitle
-            from SimpleTM
-            where GameTitle like ?
-            ''',(game.lower(),))
+                SELECT raw_word, trans_word
+                FROM Translate
+                WHERE game_id=?''',
+                (game,))
             self.__conn.commit()
             rows=c.fetchall()
             return rows
@@ -60,10 +60,9 @@ class SimpleTM:
             raise RuntimeError(e)
     def QueryGame(self):
         try:
-            c=self.__conn.cursor()
+            c = self.__GetCursor()
             c.execute('''
-            select distinct GameTitle
-            from SimpleTM
+            SELECT * FROM Game
             ''')
             self.__conn.commit()
             rows=c.fetchall()
@@ -71,50 +70,108 @@ class SimpleTM:
         except Error as e:
             raise RuntimeError(e)
 
-    def Insert(self,sRawWord,sTranslatedWord,sGameTitle):
-        try:
-            c=self.__conn.cursor()
+    def __Insert(self, sql, *args):
+        c = self.__GetCursor()
+        c.execute(sql, args)
+        if c.rowcount < 1:
+            self.__conn.rollback()
+            return False
+        else:
+            self.__conn.commit()
+            return True
+
+    def AddTranslation(self, sRawWord, sTranslatedWord, sGameID):
+        return self.__Insert(
+                '''
+                INSERT INTO Translate(game_id,raw_word,trans_word)
+                VALUES (?,?,?)
+                ''',
+                sGameID, sRawWord, sTranslatedWord
+            )
+    
+    def UpdateTranslation(self,sRawWord, sTranslatedWord, game_id):
+        c = self.__GetCursor()
+        c.execute('BEGIN TRANSACTION')
+        c.execute('SELECT * FROM Translate WHERE game_id=? AND raw_word=?', (game_id, sRawWord))
+        rows = c.fetchall()
+        if len(rows) == 0:
+            c.execute('INSERT INTO Translate VALUES (?,?,?)', (game_id, sRawWord, sTranslatedWord))
+        else:
             c.execute('''
-            insert into SimpleTM(GameTitle,RawWord,TranslatedWord)
-            values (?,?,?)
-            ''', (sGameTitle.lower(),sRawWord.lower(),sTranslatedWord.lower()))
-            if c.rowcount < 1:
-                self.__conn.rollback()
-                return False
-            else:
-                self.__conn.commit()
-                return True
-        except Error as e:
-            raise RuntimeError(e)
-    def Update(self,sRawWord,sTranslatedWord,sGameTitle):
-        try:
-            c=self.__conn.cursor()
+                UPDATE Translate
+                SET trans_word=?
+                WHERE game_id=? AND raw_word=?''',
+                (sTranslatedWord, game_id, sRawWord)
+            )
+        if c.rowcount < 1:
+            self.__conn.rollback()
+            return False
+        else:
+            self.__conn.commit()
+            return True
+
+    def UpdatePermission(self, user_id, game_id, permission):
+        c = self.__GetCursor()
+        c.execute('SELECT * FROM Permission WHERE user_id=? AND gamer_id=?', (user_id, game_id))
+        rows = c.fetchall()
+        if len(rows) == 0:
+            c.execute('INSERT INTO Permission VALUES (?,?,?)', (user_id, game_id, permission))
+        else:
             c.execute('''
-            update SimpleTM
-            set TranslatedWord=?
-            where GameTitle=? and RawWord=?
-            ''', (sTranslatedWord.lower(),sGameTitle.lower(),sRawWord.lower()))
-            if c.rowcount < 1:
-                self.__conn.rollback()
-                return False
-            else:
-                self.__conn.commit()
-                return True
-        except Error as e:
-            raise RuntimeError(e)
+                UPDATE Permission SET permission=?
+                WHERE user_id=? AND gamer_id=?''',
+                (permission, user_id, game_id)
+            )
+        if c.rowcount < 1:
+            self.__conn.rollback()
+            return False
+        else:
+            self.__conn.commit()
+            return True
+
+    def AddUser(self, user, salt):
+        return self.__Insert('INSERT INTO User VALUES (?, ?)', user, salt)
+
+    def QueryUser(self, user):
+        print(f'------{user}------')
+        c = self.__GetCursor()
+        c.execute('SELECT * FROM User WHERE id=?', (user,))
+        return c.fetchone()
+
+    def AddGame(self, game_id, game_title):
+        return self.__Insert('INSERT INTO Game VALUES (?, ?)', game_id, game_title)
+
+    def GetUser(self, username):
+        c = self.__GetCursor()
+        c.execute('SELECT * from USER where id=?', (username,))
+        return c.fetchone()
+
+
+    
     def Close(self):
         self.__conn.close()
+    
 if __name__ == "__main__":
-#SimpleTest
-    objSimpleTM=SimpleTM('SimpleTM.db')
-    print(objSimpleTM.Insert('Test','测试','TestGame1'))
-    print(objSimpleTM.Insert('Argument','理由','TestGame1'))
-    print(objSimpleTM.Insert('Test','测验','TestGame2'))
+    #SimpleTest
+    db = SimpleTM('SimpleTM.db') 
+    assert db.AddTranslation('Test','测试','imoyaba')
+    print(db.QueryByGame('imoyaba'))
+    print(db.Query('imoyaba', 'Test'))
+    assert db.UpdateTranslation('Test','测试2','imoyaba')
+    assert db.UpdateTranslation('Test','测试3','imoyaba')
+    assert db.UpdateTranslation('Test2','测试a','imoyaba')
+    assert db.UpdateTranslation('Test2','测试b','imoyaba')
+    print(db.QueryByGame('imoyaba'))
     try:
-        print(objSimpleTM.Insert('Test','测试','TestGame1'))
+        print(db.AddTranslation('Test','测试','imoyaba'))
     except Exception as e:
         print(e)
-    print(objSimpleTM.Update('Test','测试2','TestGame1'))
-    print(objSimpleTM.Update('Test','测试3','TestGame1'))
-    print(objSimpleTM.QueryGame('TestGame1'))
-    print(objSimpleTM.Query('reason'))
+    try:
+        print(db.AddTranslation('Test','测试','test_game'))
+    except Exception as e:
+        print(e)
+    assert db.AddUser('test_user', 'test_salt')
+    assert db.AddGame('test_game', 'test_title')
+    assert db.AddTranslation('Test','测试','test_game')
+    print(db.QueryGame())
+    print(db.QueryByGame('test_game'))
