@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>Welcome to Translate Assistant</h1>
-  <p><a href="{{ url_for('login') }}">log in</a></p>
-  <p><a href="{{ url_for('signup') }}">Sign up</a></p>
+  <h1>双行文本翻译辅助工具 - DLTxT Translate Assistant</h1>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for( 'login') }}';">登录</button>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for( 'signup') }}';">注册</button>
 {% endblock %}

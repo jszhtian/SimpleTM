@@ -46,8 +46,15 @@ CREATE UNIQUE INDEX permission_index
 
 INSERT INTO User VALUES ('jsc', 'bf91a58a6c67908f16a00bde8ac81215de71c937611f858f8ff1a320b8c7a89d');
 INSERT INTO Game VALUES ('imoyaba', '妹のおかげでモテすげてヤバイ。');
+INSERT INTO Game VALUES ('kamiyaba', '神頼みしすぎて俺の未来がヤバい。');
+INSERT INTO Game VALUES ('sennrennbannka', '千恋万花');
+INSERT INTO Game VALUES ('hoshikoi-tinkle', '星恋tinkle');
 INSERT INTO Translate VALUES ('imoyaba', 'test_raw', 'test_translation');
 INSERT INTO Translate VALUES ('imoyaba', 'test_raw2', 'test_translation2');
+INSERT INTO Translate VALUES ('kamiyaba', 'kami1', 'kami1-t');
 INSERT INTO Permission VALUES ('jsc', 'imoyaba', 3);
+INSERT INTO Permission VALUES ('jsc', 'kamiyaba', 2);
+INSERT INTO Permission VALUES ('jsc', 'sennrennbannka', 2);
+INSERT INTO Permission VALUES ('jsc', 'hoshikoi-tinkle', 1);
 
 COMMIT;

@@ -146,6 +146,26 @@ class SimpleTM:
         c.execute('SELECT * from USER where id=?', (username,))
         return c.fetchone()
 
+    def GetGamesByUser(self, username):
+        c = self.__GetCursor()
+        c.execute('''
+            SELECT p.user_id, p.game_id, g.title, p.permission from Permission AS p 
+            JOIN User AS u ON p.user_id=u.id
+            JOIN Game AS g ON p.game_id=g.id
+            WHERE p.user_id=?
+        ''', (username,))
+        result = []
+        rows = c.fetchall()
+        perm_map = ['无','只读','读写','管理员']
+        for uid, gid, gtitle, perm in rows:
+            result.append({
+                'user_id': uid,
+                'game_id': gid,
+                'game_title': gtitle,
+                "permission": perm_map[perm]
+            })
+        return result
+
 
     
     def Close(self):

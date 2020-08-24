@@ -58,14 +58,13 @@ def index():
 def signup():
     form = RegistrationForm(request.form)
     error = None
-    #breakpoint()
     if request.method == 'POST' and form.validate():
         username = form.username.data
         password = form.password.data
         db = SimpleTM(Config.dbFileName)
         try:
             db.AddUser(username, hash(password))
-            flash('Thanks for registering', 'success')
+            flash('注册成功', 'success')
             return redirect(url_for('login'))
         except Exception as e:
             error = e
@@ -78,7 +77,6 @@ def login():
     if request.method == 'POST':
         user_id = verify_password(request.form['username'], request.form['password'])
         if user_id:
-            flash('You were successfully logged in')
             flask_login.login_user(User(user_id))
             return redirect(url_for('home'))
         else:
@@ -88,12 +86,17 @@ def login():
 @app.route('/home', methods=['GET'])
 @flask_login.login_required
 def home():
-    return render_template('home.html', user=flask_login.current_user.id)
+    user = flask_login.current_user.id
+    db = SimpleTM(Config.dbFileName)
+    games = db.GetGamesByUser(user)
+    return render_template('home.html', user=user, projects=games)
 
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
     flash('Logged out')
+    if flask_login.current_user.is_authenticated:
+        print('still authed')
     return redirect(url_for('index'))
 
 @login_manager.unauthorized_handler

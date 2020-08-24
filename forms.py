@@ -6,15 +6,15 @@ from config import Config
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[Length(min=3, max=25)])
-    password = PasswordField('Password', validators=[Length(min=4, max=35)])
-    confirm = PasswordField('Repeat Password', validators=[
-        EqualTo('password', message='Password must match')
+    username = StringField('用户名', validators=[Length(min=3, max=25)])
+    password = PasswordField('密码', validators=[Length(min=4, max=35)])
+    confirm = PasswordField('确认密码', validators=[
+        EqualTo('password', message='与之前输入的密码不匹配')
     ])
-    submit = SubmitField('Sign Up')
+    submit = SubmitField('注册')
 
     def validate_username(self, username):
         db = SimpleTM(Config.dbFileName)
         u = db.QueryUser(username.data)
         if u:
-            raise ValidationError('User name already been taken')
+            raise ValidationError('用户名已被使用')
