@@ -18,3 +18,7 @@ class RegistrationForm(FlaskForm):
         u = db.QueryUser(username.data)
         if u:
             raise ValidationError('用户名已被使用')
+
+class NewGameForm(FlaskForm):
+    gid = StringField('项目名称', validators=[Length(min=3, max=40)])
+    description = StringField('项目描述', validators=[Length(min=0, max=300)])

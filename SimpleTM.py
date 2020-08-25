@@ -70,14 +70,17 @@ class SimpleTM:
         except Error as e:
             raise RuntimeError(e)
 
-    def __Insert(self, sql, *args):
-        c = self.__GetCursor()
+    def __Insert(self, sql, c, *args):
+        commit = c is None
+        if commit:
+            c = self.__GetCursor()
         c.execute(sql, args)
         if c.rowcount < 1:
             self.__conn.rollback()
             return False
         else:
-            self.__conn.commit()
+            if commit:
+                self.__conn.commit()
             return True
 
     def AddTranslation(self, sRawWord, sTranslatedWord, sGameID):
@@ -85,7 +88,7 @@ class SimpleTM:
                 '''
                 INSERT INTO Translate(game_id,raw_word,trans_word)
                 VALUES (?,?,?)
-                ''',
+                ''', None,
                 sGameID, sRawWord, sTranslatedWord
             )
     
@@ -110,36 +113,45 @@ class SimpleTM:
             self.__conn.commit()
             return True
 
-    def UpdatePermission(self, user_id, game_id, permission):
-        c = self.__GetCursor()
-        c.execute('SELECT * FROM Permission WHERE user_id=? AND gamer_id=?', (user_id, game_id))
+    def UpdatePermission(self, user_id, game_id, permission, c=None):
+        commit = c is None
+        if commit:
+            c = self.__GetCursor()
+        c.execute('SELECT * FROM Permission WHERE user_id=? AND game_id=?', (user_id, game_id))
         rows = c.fetchall()
         if len(rows) == 0:
             c.execute('INSERT INTO Permission VALUES (?,?,?)', (user_id, game_id, permission))
         else:
             c.execute('''
                 UPDATE Permission SET permission=?
-                WHERE user_id=? AND gamer_id=?''',
+                WHERE user_id=? AND game_id=?''',
                 (permission, user_id, game_id)
             )
         if c.rowcount < 1:
             self.__conn.rollback()
             return False
         else:
-            self.__conn.commit()
+            if commit:
+                self.__conn.commit()
             return True
 
     def AddUser(self, user, salt):
-        return self.__Insert('INSERT INTO User VALUES (?, ?)', user, salt)
+        return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt)
 
     def QueryUser(self, user):
-        print(f'------{user}------')
         c = self.__GetCursor()
         c.execute('SELECT * FROM User WHERE id=?', (user,))
         return c.fetchone()
 
     def AddGame(self, game_id, game_title):
-        return self.__Insert('INSERT INTO Game VALUES (?, ?)', game_id, game_title)
+        return self.__Insert('INSERT INTO Game VALUES (?, ?)', None, game_id, game_title)
+
+    def AddGameAsUser(self, uid, gid, gtitle):
+        c = self.__GetCursor()
+        assert self.__Insert('INSERT INTO Game VALUES (?, ?)', c, gid, gtitle)
+        assert self.UpdatePermission(uid, gid, 3, c)
+        self.__conn.commit()
+        
 
     def GetUser(self, username):
         c = self.__GetCursor()

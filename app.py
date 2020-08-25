@@ -4,7 +4,7 @@ import flask
 from flask import request, jsonify, render_template, send_file, flash, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 import flask_login
-from forms import RegistrationForm  
+from forms import RegistrationForm, NewGameForm
 from config import Config
 
 def hash(s):
@@ -80,21 +80,32 @@ def login():
             flask_login.login_user(User(user_id))
             return redirect(url_for('home'))
         else:
-            error = 'Invalid credentials'
-    return render_template('login.html', error=error)
+            flash('用户名或密码不正确', 'danger')
+    return render_template('login.html')
 
-@app.route('/home', methods=['GET'])
+@app.route('/home', methods=['GET','POST'])
 @flask_login.login_required
 def home():
+    form = NewGameForm(request.form)
     user = flask_login.current_user.id
     db = SimpleTM(Config.dbFileName)
+    if request.method == 'POST':
+        gid = form.gid.data
+        description = form.description.data
+        print(gid, description)
+        try:
+            db.AddGameAsUser(user, gid, description)
+            flash(f"项目{gid}创建成功", "success")
+        except Exception as e:
+            print(e)
+            flash("该项目已存在，请换一个项目名", "danger")
     games = db.GetGamesByUser(user)
-    return render_template('home.html', user=user, projects=games)
+    return render_template('home.html', user=user, projects=games, form=form)
 
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
-    flash('Logged out')
+    flash('已登出', 'primary')
     if flask_login.current_user.is_authenticated:
         print('still authed')
     return redirect(url_for('index'))
