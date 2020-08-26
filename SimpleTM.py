@@ -135,6 +135,14 @@ class SimpleTM:
                 self.__conn.commit()
             return True
 
+    def getPermission(self, uid, gid):
+        c = self.__GetCursor()
+        c.execute('SELECT permission FROM Permission WHERE user_id=? AND game_id=?', (uid, gid))
+        row = c.fetchone()
+        if not row:
+            return 0
+        return row[0]
+
     def AddUser(self, user, salt):
         return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt)
 

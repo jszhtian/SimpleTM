@@ -6,6 +6,7 @@ from flask_httpauth import HTTPBasicAuth
 import flask_login
 from forms import RegistrationForm, NewGameForm
 from config import Config
+from permission import must_has_permission, Permission
 
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
@@ -24,6 +25,16 @@ def verify_password(username, password):
     user = db.GetUser(username)
     if user and user[0] == username and user[1] == hash(password):
         return username
+
+@auth.error_handler
+def error_handler(status):
+    em = {401:'Unauthorized', 403:'Forbidden'}
+    m = status
+    try:
+        m = em[status]
+    except:
+        pass
+    return jsonify(Result='False', Message=str(m))
 
 class User(flask_login.UserMixin):
     def __init__(self, id):
@@ -114,28 +125,11 @@ def logout():
 def unauthorized_handler():
     return render_template('unauthorized.html')
 
-@app.route('/api/query/<string:rawWord>', methods=['GET'])
-@auth.login_required
-def api_query(rawWord):
-    try:
-        SimpleTMObj = SimpleTM(Config.dbFileName)
-        ret = SimpleTMObj.Query(rawWord)
-        SimpleTMObj.Close()
-        json_lst = []
-        for line in ret:
-            tmp_json_dict = {}
-            tmp_json_dict['raw'] = line[0]
-            tmp_json_dict['translate'] = line[1]
-            tmp_json_dict['game'] = line[2]
-            json_lst.append(tmp_json_dict)
-        return jsonify(json_lst)
-    except Exception as e:
-        return jsonify(Result='False', Message=str(e))
-
 @app.route('/api/querybygame/<string:game>', methods=['GET'])
 @auth.login_required
 def api_querybygame(game):
     try:
+        must_has_permission(auth.current_user(), game, Permission.READ)
         SimpleTMObj = SimpleTM(Config.dbFileName)
         ret = SimpleTMObj.QueryByGame(game)
         SimpleTMObj.Close()
@@ -150,10 +144,11 @@ def api_querybygame(game):
         return jsonify(Result='False', Message=str(e))
 
 
-@app.route('/api/insert/<string:rawWord>/<string:translate>/<string:game>', methods=['GET'])
+@app.route('/api/insert/<string:game>/<string:rawWord>/<string:translate>', methods=['GET'])
 @auth.login_required
-def api_insert(rawWord,translate,game):
+def api_insert(game, rawWord, translate):
     try:
+        must_has_permission(auth.current_user(), game, Permission.EDIT)
         SimpleTMObj = SimpleTM(Config.dbFileName)
         ret = SimpleTMObj.Insert(rawWord, translate, game)
         SimpleTMObj.Close()
@@ -165,10 +160,11 @@ def api_insert(rawWord,translate,game):
         return jsonify(Result='False', Message=str(e))
 
 
-@app.route('/api/update/<string:rawWord>/<string:translate>/<string:game>', methods=['GET'])
+@app.route('/api/update/<string:game>/<string:rawWord>/<string:translate>', methods=['GET'])
 @auth.login_required
-def api_update(rawWord,translate,game):
+def api_update(game, rawWord, translate):
     try:
+        must_has_permission(auth.current_user(), game, Permission.EDIT)
         SimpleTMObj = SimpleTM(Config.dbFileName)
         ret = SimpleTMObj.Update(rawWord, translate, game)
         SimpleTMObj.Close()
