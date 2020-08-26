@@ -31,7 +31,7 @@ CREATE INDEX translate_index
     ON Translate (game_id);
 CREATE TABLE Permission
 (
-    user_id int NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
     game_id text NOT NULL, 
     permission int NOT NULL, --(none=0, read=1, write=2, admin=3)
     FOREIGN KEY (user_id) REFERENCES User(id)
