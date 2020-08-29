@@ -15,8 +15,12 @@ def hash(s):
 def genToken():
     return secrets.token_urlsafe(32)
 
+def get_secret_key():
+    f = open('.secret', 'r')
+    return f.read().strip()
+
 app = flask.Flask(__name__)
-app.secret_key = b'jasm.9d8Pd01[p]/))((*&(283972rhc&&'
+app.secret_key = get_secret_key()
 auth = HTTPBasicAuth()
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
