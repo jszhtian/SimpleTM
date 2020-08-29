@@ -4,7 +4,7 @@ import flask
 from flask import request, jsonify, render_template, send_file, flash, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 import flask_login
-from forms import RegistrationForm, NewGameForm
+from forms import RegistrationForm, NewGameForm, UpdatePermissionForm, DeleteGameForm
 from config import Config
 from permission import must_has_permission, Permission
 
@@ -100,7 +100,7 @@ def home():
     form = NewGameForm(request.form)
     user = flask_login.current_user.id
     db = SimpleTM(Config.dbFileName)
-    if request.method == 'POST':
+    if request.method == 'POST' and form.validate_on_submit():
         gid = form.gid.data
         description = form.description.data
         print(gid, description)
@@ -111,7 +111,50 @@ def home():
             print(e)
             flash("该项目已存在，请换一个项目名", "danger")
     games = db.GetGamesByUser(user)
-    return render_template('home.html', user=user, projects=games, form=form)
+    pforms, dforms = {}, {}
+    for g in games:
+        pforms[g['game_id']] = UpdatePermissionForm()
+        dforms[g['game_id']] = DeleteGameForm()
+    return render_template('home.html', user=user, projects=games, form=form, pforms=pforms,
+        dforms=dforms)
+
+@app.route('/home/updatePermission', methods=['POST'])
+@flask_login.login_required
+def update_permission():
+    form = UpdatePermissionForm(request.form)
+    user = flask_login.current_user.id
+    try:
+        if form.validate_on_submit():
+            db = SimpleTM(Config.dbFileName)
+            gid = form.gid.data
+            must_has_permission(user, gid, Permission.ADMIN)
+            target_uid = form.uid.data
+            if user == target_uid:
+                raise RuntimeError("不能更改自己的权限")
+            target_perm = form.perm.data
+            assert db.UpdatePermission(target_uid, gid, target_perm)
+            flash(f'成功更改项目{gid}中用户{target_uid}的权限', 'success')
+    except Exception as e:
+        flash(str(e), 'danger')
+    return redirect(url_for('home'))
+
+@app.route('/home/deleteGame', methods=['POST'])
+@flask_login.login_required
+def delete_game():
+    form = DeleteGameForm(request.form)
+    user = flask_login.current_user.id
+    try:
+        if form.validate_on_submit():
+            db = SimpleTM(Config.dbFileName)
+            gid = form.gid.data
+            must_has_permission(user, gid, Permission.ADMIN)
+            db.DeleteGame(gid)
+            flash(f'已删除项目{gid}', 'success')
+            
+    except Exception as e:
+        flash(str(e), 'danger')
+    return redirect(url_for('home'))
+    
 
 @app.route('/logout')
 def logout():

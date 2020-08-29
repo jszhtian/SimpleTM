@@ -1,20 +1,90 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>{{ user }}主页</h1>
-  <ul class="list-group">
-    {% for p in projects %}
-        <li class="list-group-item">{{ p['game_id'] }} {{ p['game_title'] }} {{ p['permission'] }}</li>
-  　{% endfor %}
-  </ul>
-  <form method=post class="form-inline">
-    <div class="form-group mb-2">
-      {{ form.gid.label(class="sr-only") }}
-      {{ form.gid(class="form-control", placeholder="项目名称") }}
+  <div class="container">
+    <h1 class="md-2">{{ user }}的主页</h1>
+    <div class="accordion" id="gamesAccordion">
+      {% for p in projects %}
+      <div class="card">
+        <div class="card-header" id="heading{{ p['game_id'] }}">
+          <h2 class="mb-0">
+            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse{{ p['game_id'] }}" aria-expanded="false" aria-controls="collapse{{ p['game_id'] }}">
+              {{ p['game_id'] }} {{ p['game_title'] }} {{ p['permission'] }}
+            </button>
+          </h2>
+        </div>
+    
+        <div id="collapse{{ p['game_id'] }}" class="collapse" aria-labelledby="heading{{ p['game_id'] }}" data-parent="#gamesAccordion">
+          <div class="card-body">
+            {% if p['permission'] == '管理员' %}
+              {% set pform = pforms[p['game_id']] %}
+              <form action="/home/updatePermission" method=post class="form-inline">
+                {{ form.hidden_tag() }}
+                <div class="input-group">
+                  <div hidden>
+                    {{ pform.gid.label(class="sr-only") }}
+                    {{ pform.gid(class="form-control", value=p['game_id'], readonly=true) }}
+                  </div>
+                  {{ pform.uid.label(class="sr-only") }}
+                  {{ pform.uid(class="form-control", placeholder="用户ＩＤ") }}
+                  <label class="input-group-text sr-only" for="perm"></label>
+                  <select class="form-control custom-select" id="perm" name="perm">
+                    <option selected>选择权限</option>
+                    <option value="0">无（去除该用户）</option>
+                    <option value="1">只读</option>
+                    <option value="2">读写</option>
+                    <option value="3">管理员</option>
+                  </select>
+                  <div class="input-group-append">
+                    <button type=submit class="btn btn-outline-secondary">设置权限</button>
+                  </div>
+                </div>
+              </form>
+              {% set dform = dforms[p['game_id']] %}
+              <!-- Button trigger modal -->
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteGameMoral">
+                删除项目
+              </button>
+              <!-- Modal -->
+              <div class="modal fade" id="deleteGameMoral" tabindex="-1" role="dialog" aria-labelledby="deleteGameMoralLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      确认要删除项目{{ p['game_id'] }}吗？
+                    </div>
+                    <div class="modal-footer">
+                      <form action="/home/deleteGame" method=post class="form-inline">
+                        {{ form.hidden_tag() }}
+                        <div hidden>
+                          {{ dform.gid.label(class="sr-only") }}
+                          {{ dform.gid(class="form-control", value=p['game_id'], readonly=true) }}
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-danger">删除</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    <div class="form-group mx-sm-3 mb-2">
-      {{ form.description.label(class="sr-only") }}
-      {{ form.description(class="form-control", placeholder="项目描述") }}
-    </div>
-    <button type=submit class="btn btn-primary mb-2">添加项目</button>
-  </form>
+    <form method=post class="form-inline">
+      {{ form.hidden_tag() }}
+      <div class="input-group">
+        {{ form.gid.label(class="sr-only") }}
+        {{ form.gid(class="form-control", placeholder="项目名称") }}
+        {{ form.description.label(class="sr-only") }}
+        {{ form.description(class="form-control", placeholder="项目描述") }}
+        <button type=submit class="btn btn-primary">添加项目</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}

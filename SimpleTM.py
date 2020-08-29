@@ -159,6 +159,11 @@ class SimpleTM:
         assert self.__Insert('INSERT INTO Game VALUES (?, ?)', c, gid, gtitle)
         assert self.UpdatePermission(uid, gid, 3, c)
         self.__conn.commit()
+
+    def DeleteGame(self, game_id):
+        c = self.__GetCursor()
+        c.execute('DELETE FROM Game WHERE id=?', (game_id,))
+        self.__conn.commit()
         
 
     def GetUser(self, username):

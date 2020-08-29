@@ -18,7 +18,7 @@
 </head>
 <body>
     <header class="site-header">
-      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+      <nav class="navbar navbar-expand-md navbar-light fixed-top" style="background-color: #0069b4;">
         <div class="container">
           <a class="navbar-brand mr-4" href="/">Translate Assistant</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,22 +41,29 @@
         </div>
       </nav>
     </header>
-    <main role="main" class="container">
-      <div class="row">
-        <div class="col-md-8">
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-          {% block body %}{% endblock %}
+    <main role="main">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block body %}{% endblock %}
+          </div>
         </div>
       </div>
+      {% block outer %}{% endblock %}
     </main>
+
+    <footer class="footer">
+        <span class="text-muted">双行文本翻译辅助工具 - SimpleTM / DLTxT Translate Assistant</span>
+    </footer>
 
 
     <!-- Optional JavaScript -->
