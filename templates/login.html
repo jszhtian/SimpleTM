@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
+  <h2>登录</h2>
+  <form method=post>
+    <div class="form-group">
+      <strong><label for="username">用户名</label></strong>
+      <input type="text" class="form-control" id=username name=username> 
+    </div>
+    <div class="form-group">
+      <strong><label for="password">密码</label></strong>
+      <input type="password" class="form-control" id=password name=password>
+    </div>
+    <button type="submit" class="btn btn-primary">登录</button>
+  </form>
+{% endblock %}

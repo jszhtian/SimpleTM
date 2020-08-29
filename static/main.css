@@ -1,0 +1,55 @@
+body {
+    background: #fafafa;
+    color: #333333;
+    margin-top: 5rem;
+    margin-bottom: 60px; /* Margin bottom by footer height */
+    font-family: "Microsoft YaHei", Arial, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #444444;
+  }
+  
+  .bg-steel {
+    background-color: #5f788a;
+  }
+  
+  .site-header .navbar-nav .nav-link {
+    color: #cbd5db;
+  }
+  
+  .site-header .navbar-nav .nav-link:hover {
+    color: #ffffff;
+  }
+  
+  .site-header .navbar-nav .nav-link.active {
+    font-weight: 500;
+  }
+  
+
+
+  /* ----------------------------------- */
+.primary-button {
+    background-color: #0275d8; 
+    border: none;
+    color: white;
+    padding: 20px 58px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+    margin: 8px 4px;
+    cursor: pointer;
+}
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 3px;
+  height: 40px; /* Set the fixed height of the footer here */
+  line-height: 40px; /* Vertically center the text there */
+  background-color: #8cbcdf;
+  color: black;
+}

@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+{% block body %}
+  <div class="container">
+    <h1 class="md-2">{{ user }}</h1>
+    <div class="input-group md-3 mt-3 mb-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">API Token</span>
+      </div>
+      <input type="text" id="tokenValueBox" class="form-control" value="{{ token }}"" aria-label="token" aria-describedby="basic-addon2" readonly>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" onclick="copyToClipboard('tokenValueBox')">复制</button>
+      </div>
+      <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <!-- Moral Trigger-->
+      <div class="dropdown-menu">
+        <a class="dropdown-item" data-toggle="modal" data-target="#updateTokenMoral">更新</a>
+      </div>
+      <!-- Modal -->
+      <div class="modal fade" id="updateTokenMoral" tabindex="-1" role="dialog" aria-labelledby="updateTokenMoralLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              更新后之前的API Token将失效，确认要更新吗？
+            </div>
+            <div class="modal-footer">
+              <form action="/home/updateToken" method=post class="form-inline">
+                {{ tform.hidden_tag() }}
+                <div hidden>
+                  {{ tform.uid.label(class="sr-only") }}
+                  {{ tform.uid(class="form-control", value=user, readonly=true) }}
+                </div>
+                <button type="button" class="btn btn-secondary m-2" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-danger m-2">更新</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end Moral -->
+    </div>
+    <div class="accordion" id="gamesAccordion">
+      {% for p in projects %}
+      <div class="card">
+        <div class="card-header" id="heading{{ p['game_id'] }}">
+          <h2 class="mb-0">
+            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse{{ p['game_id'] }}" aria-expanded="false" aria-controls="collapse{{ p['game_id'] }}">
+              {{ p['game_id'] }} {{ p['game_title'] }} {{ p['permission'] }}
+            </button>
+          </h2>
+        </div>
+    
+        <div id="collapse{{ p['game_id'] }}" class="collapse" aria-labelledby="heading{{ p['game_id'] }}" data-parent="#gamesAccordion">
+          <div class="card-body">
+            {% if p['permission'] == '管理员' %}
+              {% set pform = pforms[p['game_id']] %}
+              <form action="/home/updatePermission" method=post class="form-inline">
+                {{ form.hidden_tag() }}
+                <div class="input-group">
+                  <div hidden>
+                    {{ pform.gid.label(class="sr-only") }}
+                    {{ pform.gid(class="form-control", value=p['game_id'], readonly=true) }}
+                  </div>
+                  {{ pform.uid.label(class="sr-only") }}
+                  {{ pform.uid(class="form-control", placeholder="用户ＩＤ") }}
+                  <label class="input-group-text sr-only" for="perm"></label>
+                  <select class="form-control custom-select" id="perm" name="perm">
+                    <option selected>选择权限</option>
+                    <option value="0">无（去除该用户）</option>
+                    <option value="1">只读</option>
+                    <option value="2">读写</option>
+                    <option value="3">管理员</option>
+                  </select>
+                  <div class="input-group-append">
+                    <button type=submit class="btn btn-outline-secondary">设置权限</button>
+                  </div>
+                </div>
+              </form>
+
+              {% set dform = dforms[p['game_id']] %}
+              <!-- Button trigger modal -->
+              <button type="button" class="btn btn-danger mt-2" data-toggle="modal" data-target="#deleteGameMoral">
+                删除项目
+              </button>
+              <!-- Modal -->
+              <div class="modal fade" id="deleteGameMoral" tabindex="-1" role="dialog" aria-labelledby="deleteGameMoralLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      确认要删除项目{{ p['game_id'] }}吗？（此操作不可复原）
+                    </div>
+                    <div class="modal-footer">
+                      <form action="/home/deleteGame" method=post class="form-inline">
+                        {{ dform.hidden_tag() }}
+                        <div hidden>
+                          {{ dform.gid.label(class="sr-only") }}
+                          {{ dform.gid(class="form-control", value=p['game_id'], readonly=true) }}
+                        </div>
+                        <div class="btn-toolbar">
+                          <button type="button" class="btn btn-secondary m-2" data-dismiss="modal">取消</button>
+                          <button type="submit" class="btn btn-danger m-2">删除</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- end Moral -->
+
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <form method=post class="form-inline">
+      {{ form.hidden_tag() }}
+      <div class="input-group mt-3">
+        {{ form.gid.label(class="sr-only") }}
+        {{ form.gid(class="form-control", placeholder="项目名称") }}
+        {{ form.description.label(class="sr-only") }}
+        {{ form.description(class="form-control", placeholder="项目描述") }}
+        <button type=submit class="btn btn-primary">添加项目</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

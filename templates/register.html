@@ -1,0 +1,14 @@
+{% from "_formhelpers.html" import render_field %}
+{% extends "layout.html" %}
+{% block body %}
+  <form method=post>
+    {{ form.hidden_tag() }}
+    <dl>
+      {{ render_field(form.username, class="form-control") }}
+      {{ render_field(form.password, class="form-control") }}
+      {{ render_field(form.confirm, class="form-control") }}
+    </dl>
+    <p><input class="btn btn-primary" type=submit value='注册'>
+  </form>
+  
+{% endblock %}
