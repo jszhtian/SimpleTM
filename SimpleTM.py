@@ -143,13 +143,29 @@ class SimpleTM:
             return 0
         return row[0]
 
-    def AddUser(self, user, salt):
-        return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt)
+    def AddUser(self, user, salt, token):
+        return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt) \
+            and self.__Insert('INSERT INTO APITokens VALUES (?, ?)', None, user, token)
+
+    def UpdateToken(self, user, token):
+        c = self.__GetCursor()
+        c.execute('UPDATE APIToken SET token=? WHERE user_id=?', (token, user))
+        if c.rowcount < 1:
+            self.__conn.rollback()
+            return False
+        else:
+            self.__conn.commit()
+            return True
 
     def QueryUser(self, user):
         c = self.__GetCursor()
         c.execute('SELECT * FROM User WHERE id=?', (user,))
         return c.fetchone()
+
+    def GetUserAPIToken(self, user):
+        c = self.__GetCursor()
+        c.execute('SELECT token FROM APIToken WHERE user_id=?', (user,))
+        return c.fetchall()
 
     def AddGame(self, game_id, game_title):
         return self.__Insert('INSERT INTO Game VALUES (?, ?)', None, game_id, game_title)

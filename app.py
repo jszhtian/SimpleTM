@@ -4,12 +4,16 @@ import flask
 from flask import request, jsonify, render_template, send_file, flash, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 import flask_login
-from forms import RegistrationForm, NewGameForm, UpdatePermissionForm, DeleteGameForm
+from forms import RegistrationForm, NewGameForm, UpdatePermissionForm, DeleteGameForm, UpdateTokenForm
 from config import Config
 from permission import must_has_permission, Permission
+import secrets
 
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
+
+def genToken():
+    return secrets.token_urlsafe(32)
 
 app = flask.Flask(__name__)
 app.secret_key = b'jasm.9d8Pd01[p]/))((*&(283972rhc&&'
@@ -17,13 +21,18 @@ auth = HTTPBasicAuth()
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 
-
-
-@auth.verify_password
 def verify_password(username, password):
     db = SimpleTM(Config.dbFileName)
     user = db.GetUser(username)
     if user and user[0] == username and user[1] == hash(password):
+        return username
+
+@auth.verify_password
+def verify_token(username, token):
+    db = SimpleTM(Config.dbFileName)
+    tokens = db.GetUserAPIToken(username)
+    print(tokens)
+    if tokens and tokens[0][0] == token:
         return username
 
 @auth.error_handler
@@ -74,7 +83,7 @@ def signup():
         password = form.password.data
         db = SimpleTM(Config.dbFileName)
         try:
-            db.AddUser(username, hash(password))
+            db.AddUser(username, hash(password), genToken())
             flash('注册成功', 'success')
             return redirect(url_for('login'))
         except Exception as e:
@@ -110,12 +119,15 @@ def home():
         except Exception as e:
             print(e)
             flash("该项目已存在，请换一个项目名", "danger")
+    token = db.GetUserAPIToken(user)[0][0]
+    tform = UpdateTokenForm()
     games = db.GetGamesByUser(user)
     pforms, dforms = {}, {}
     for g in games:
         pforms[g['game_id']] = UpdatePermissionForm()
         dforms[g['game_id']] = DeleteGameForm()
-    return render_template('home.html', user=user, projects=games, form=form, pforms=pforms,
+    return render_template('home.html', user=user, token=token,
+         projects=games, form=form, pforms=pforms, tform=tform,
         dforms=dforms)
 
 @app.route('/home/updatePermission', methods=['POST'])
@@ -151,6 +163,21 @@ def delete_game():
             db.DeleteGame(gid)
             flash(f'已删除项目{gid}', 'success')
             
+    except Exception as e:
+        flash(str(e), 'danger')
+    return redirect(url_for('home'))
+
+@app.route('/home/updateToken', methods=['POST'])
+@flask_login.login_required
+def update_token():
+    form = UpdateTokenForm(request.form)
+    user = flask_login.current_user.id
+    try:
+        if form.validate_on_submit():
+            db = SimpleTM(Config.dbFileName)
+            uid = form.uid.data
+            assert db.UpdateToken(uid, genToken())
+            flash(f'已更新API Token', 'success')
     except Exception as e:
         flash(str(e), 'danger')
     return redirect(url_for('home'))

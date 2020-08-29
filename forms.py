@@ -30,3 +30,6 @@ class UpdatePermissionForm(FlaskForm):
 
 class DeleteGameForm(FlaskForm):
     gid = StringField('项目名称', validators=[Length(min=3, max=40)])
+
+class UpdateTokenForm(FlaskForm):
+    uid = StringField('用户名', validators=[Length(min=3, max=25)])

@@ -9,6 +9,16 @@ CREATE TABLE User
 );
 CREATE UNIQUE INDEX user_index 
     ON USER (id);
+CREATE TABLE APIToken
+(
+    user_id VARCHAR(255) NOT NULL,
+    token text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES User(id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+);
+CREATE INDEX token_index 
+    ON APIToken (user_id);
 CREATE TABLE Game
 (
     id text NOT NULL,
@@ -45,6 +55,7 @@ CREATE UNIQUE INDEX permission_index
     ON Permission (user_id, game_id);
 
 INSERT INTO User VALUES ('jsc', 'bf91a58a6c67908f16a00bde8ac81215de71c937611f858f8ff1a320b8c7a89d');
+INSERT INTO APIToken VALUES ('jsc', 'jydSnjNELJoTWA20ImGw3ScBLeKhgk5Kl7mAhUAL04U');
 INSERT INTO Game VALUES ('imoyaba', '妹のおかげでモテすげてヤバイ。');
 INSERT INTO Game VALUES ('kamiyaba', '神頼みしすぎて俺の未来がヤバい。');
 INSERT INTO Game VALUES ('sennrennbannka', '千恋万花');

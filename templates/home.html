@@ -1,7 +1,50 @@
 {% extends "layout.html" %}
 {% block body %}
   <div class="container">
-    <h1 class="md-2">{{ user }}的主页</h1>
+    <h1 class="md-2">{{ user }}</h1>
+    <div class="input-group md-3">
+      <div class="input-group-prepend">
+        <span class="input-group-text">API Token</span>
+      </div>
+      <input type="text" id="tokenValueBox" class="form-control" value="{{ token }}"" aria-label="token" aria-describedby="basic-addon2" readonly>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" onclick="copyToClipboard('tokenValueBox')">复制</button>
+      </div>
+      <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <!-- Moral Trigger-->
+      <div class="dropdown-menu">
+        <a class="dropdown-item" data-toggle="modal" data-target="#updateTokenMoral">更新</a>
+      </div>
+      <!-- Modal -->
+      <div class="modal fade" id="updateTokenMoral" tabindex="-1" role="dialog" aria-labelledby="updateTokenMoralLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              更新后之前的API Token将失效，确认要更新吗？
+            </div>
+            <div class="modal-footer">
+              <form action="/home/updateToken" method=post class="form-inline">
+                {{ tform.hidden_tag() }}
+                <div hidden>
+                  {{ tform.uid.label(class="sr-only") }}
+                  {{ tform.uid(class="form-control", value=user, readonly=true) }}
+                </div>
+                <button type="button" class="btn btn-secondary m-2" data-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-danger m-2">更新</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end Moral -->
+    </div>
     <div class="accordion" id="gamesAccordion">
       {% for p in projects %}
       <div class="card">
@@ -39,9 +82,10 @@
                   </div>
                 </div>
               </form>
+
               {% set dform = dforms[p['game_id']] %}
               <!-- Button trigger modal -->
-              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteGameMoral">
+              <button type="button" class="btn btn-danger mt-2" data-toggle="modal" data-target="#deleteGameMoral">
                 删除项目
               </button>
               <!-- Modal -->
@@ -54,22 +98,26 @@
                       </button>
                     </div>
                     <div class="modal-body">
-                      确认要删除项目{{ p['game_id'] }}吗？
+                      确认要删除项目{{ p['game_id'] }}吗？（此操作不可复原）
                     </div>
                     <div class="modal-footer">
                       <form action="/home/deleteGame" method=post class="form-inline">
-                        {{ form.hidden_tag() }}
+                        {{ dform.hidden_tag() }}
                         <div hidden>
                           {{ dform.gid.label(class="sr-only") }}
                           {{ dform.gid(class="form-control", value=p['game_id'], readonly=true) }}
                         </div>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-danger">删除</button>
+                        <div class="btn-toolbar">
+                          <button type="button" class="btn btn-secondary m-2" data-dismiss="modal">取消</button>
+                          <button type="submit" class="btn btn-danger m-2">删除</button>
+                        </div>
                       </form>
                     </div>
                   </div>
                 </div>
               </div>
+              <!-- end Moral -->
+
             {% endif %}
           </div>
         </div>
@@ -78,7 +126,7 @@
     </div>
     <form method=post class="form-inline">
       {{ form.hidden_tag() }}
-      <div class="input-group">
+      <div class="input-group m-2">
         {{ form.gid.label(class="sr-only") }}
         {{ form.gid(class="form-control", placeholder="项目名称") }}
         {{ form.description.label(class="sr-only") }}
