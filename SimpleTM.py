@@ -94,18 +94,12 @@ class SimpleTM:
     
     def UpdateTranslation(self,sRawWord, sTranslatedWord, game_id):
         c = self.__GetCursor()
-        c.execute('BEGIN TRANSACTION')
-        c.execute('SELECT * FROM Translate WHERE game_id=? AND raw_word=?', (game_id, sRawWord))
-        rows = c.fetchall()
-        if len(rows) == 0:
-            c.execute('INSERT INTO Translate VALUES (?,?,?)', (game_id, sRawWord, sTranslatedWord))
-        else:
-            c.execute('''
-                UPDATE Translate
-                SET trans_word=?
-                WHERE game_id=? AND raw_word=?''',
-                (sTranslatedWord, game_id, sRawWord)
-            )
+        c.execute('''
+            UPDATE Translate
+            SET trans_word=?
+            WHERE game_id=? AND raw_word=?''',
+            (sTranslatedWord, game_id, sRawWord)
+        )
         if c.rowcount < 1:
             self.__conn.rollback()
             return False

@@ -223,7 +223,7 @@ def api_insert(game, rawWord, translate):
     try:
         must_has_permission(auth.current_user(), game, Permission.EDIT)
         SimpleTMObj = SimpleTM(Config.dbFileName)
-        ret = SimpleTMObj.Insert(rawWord, translate, game)
+        ret = SimpleTMObj.AddTranslation(rawWord, translate, game)
         SimpleTMObj.Close()
         if ret == True:
             return jsonify(Result='True', Message='')
@@ -239,7 +239,7 @@ def api_update(game, rawWord, translate):
     try:
         must_has_permission(auth.current_user(), game, Permission.EDIT)
         SimpleTMObj = SimpleTM(Config.dbFileName)
-        ret = SimpleTMObj.Update(rawWord, translate, game)
+        ret = SimpleTMObj.UpdateTranslation(rawWord, translate, game)
         SimpleTMObj.Close()
         if ret == True:
             return jsonify(Result='True', Message='')
