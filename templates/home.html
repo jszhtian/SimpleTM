@@ -2,7 +2,7 @@
 {% block body %}
   <div class="container">
     <h1 class="md-2">{{ user }}</h1>
-    <div class="input-group md-3">
+    <div class="input-group md-3 mt-3 mb-3">
       <div class="input-group-prepend">
         <span class="input-group-text">API Token</span>
       </div>
@@ -126,7 +126,7 @@
     </div>
     <form method=post class="form-inline">
       {{ form.hidden_tag() }}
-      <div class="input-group m-2">
+      <div class="input-group mt-3">
         {{ form.gid.label(class="sr-only") }}
         {{ form.gid(class="form-control", placeholder="项目名称") }}
         {{ form.description.label(class="sr-only") }}

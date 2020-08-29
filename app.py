@@ -77,7 +77,6 @@ def index():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = RegistrationForm(request.form)
-    error = None
     if request.method == 'POST' and form.validate():
         username = form.username.data
         password = form.password.data
@@ -87,13 +86,12 @@ def signup():
             flash('注册成功', 'success')
             return redirect(url_for('login'))
         except Exception as e:
-            error = e
+            flash(str(e), 'danger')
     
-    return render_template('register.html', form=form, error=error)
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
     if request.method == 'POST':
         user_id = verify_password(request.form['username'], request.form['password'])
         if user_id:
@@ -193,7 +191,8 @@ def logout():
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
-    return render_template('unauthorized.html')
+    flash('请先登录', 'warning')
+    return redirect(url_for('login'))
 
 @app.route('/api/querybygame/<string:game>', methods=['GET'])
 @auth.login_required

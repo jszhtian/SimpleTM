@@ -145,7 +145,7 @@ class SimpleTM:
 
     def AddUser(self, user, salt, token):
         return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt) \
-            and self.__Insert('INSERT INTO APITokens VALUES (?, ?)', None, user, token)
+            and self.__Insert('INSERT INTO APIToken VALUES (?, ?)', None, user, token)
 
     def UpdateToken(self, user, token):
         c = self.__GetCursor()

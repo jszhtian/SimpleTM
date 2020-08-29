@@ -1,17 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
-  <h1>登录</h1>
-  {% if error %}
-    <p class=error><strong>Error:</strong> {{ error }}
-  {% endif %}
+  <h2>登录</h2>
   <form method=post>
-    <dl>
-      <dt>用户名:
-      <dd><input type=text name=username value="{{
-          request.form.username }}">
-      <dt>密码:
-      <dd><input type=password name=password>
-    </dl>
-    <p><input class="btn btn-primary" type=submit value='登录'>
+    <div class="form-group">
+      <strong><label for="username">用户名</label></strong>
+      <input type="text" class="form-control" id=username name=username> 
+    </div>
+    <div class="form-group">
+      <strong><label for="password">密码</label></strong>
+      <input type="password" class="form-control" id=password name=password>
+    </div>
+    <button type="submit" class="btn btn-primary">登录</button>
   </form>
 {% endblock %}
