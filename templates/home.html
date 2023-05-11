@@ -117,8 +117,14 @@
                 </div>
               </div>
               <!-- end Moral -->
-
             {% endif %}
+
+            <!-- User list-->
+            {% for u in gameUsers[p['game_id']] %}
+              <div style="display: block; width: 100%;">
+                {{ u['user_id'] }} {{ u['permission'] }}
+              </div>
+            {% endfor %}
           </div>
         </div>
       </div>

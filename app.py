@@ -125,12 +125,14 @@ def home():
     tform = UpdateTokenForm()
     games = db.GetGamesByUser(user)
     pforms, dforms = {}, {}
+    gameUsers = {}
     for g in games:
         pforms[g['game_id']] = UpdatePermissionForm()
         dforms[g['game_id']] = DeleteGameForm()
+        gameUsers[g['game_id']] = db.GetUsersByGame(g['game_id'])
     return render_template('home.html', user=user, token=token,
          projects=games, form=form, pforms=pforms, tform=tform,
-        dforms=dforms)
+        dforms=dforms, gameUsers=gameUsers)
 
 @app.route('/home/updatePermission', methods=['POST'])
 @flask_login.login_required
@@ -146,6 +148,7 @@ def update_permission():
             if user == target_uid:
                 raise RuntimeError("不能更改自己的权限")
             target_perm = form.perm.data
+            print(target_uid, gid, target_perm)
             assert db.UpdatePermission(target_uid, gid, target_perm)
             flash(f'成功更改项目{gid}中用户{target_uid}的权限', 'success')
     except Exception as e:
@@ -240,6 +243,21 @@ def api_update(game, rawWord, translate):
         must_has_permission(auth.current_user(), game, Permission.EDIT)
         SimpleTMObj = SimpleTM(Config.dbFileName)
         ret = SimpleTMObj.UpdateTranslation(rawWord, translate, game)
+        SimpleTMObj.Close()
+        if ret == True:
+            return jsonify(Result='True', Message='')
+        else:
+            return jsonify(Result='False', Message='')
+    except Exception as e:
+        return jsonify(Result='False', Message=str(e))
+    
+@app.route('/api/delete/<string:game>/<string:rawWord>', methods=['GET'])
+@auth.login_required
+def api_delete(game, rawWord):
+    try:
+        must_has_permission(auth.current_user(), game, Permission.EDIT)
+        SimpleTMObj = SimpleTM(Config.dbFileName)
+        ret = SimpleTMObj.DeleteTranslation(rawWord, game)
         SimpleTMObj.Close()
         if ret == True:
             return jsonify(Result='True', Message='')

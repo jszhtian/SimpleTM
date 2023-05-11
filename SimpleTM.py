@@ -92,7 +92,7 @@ class SimpleTM:
                 sGameID, sRawWord, sTranslatedWord
             )
     
-    def UpdateTranslation(self,sRawWord, sTranslatedWord, game_id):
+    def UpdateTranslation(self, sRawWord, sTranslatedWord, game_id):
         c = self.__GetCursor()
         c.execute('''
             UPDATE Translate
@@ -106,6 +106,12 @@ class SimpleTM:
         else:
             self.__conn.commit()
             return True
+        
+    def DeleteTranslation(self, sRawWord, game_id):
+        c = self.__GetCursor()
+        c.execute('DELETE FROM Translate WHERE game_id=? AND raw_word=?', (game_id, sRawWord))
+        self.__conn.commit()
+        return True
 
     def UpdatePermission(self, user_id, game_id, permission, c=None):
         commit = c is None
@@ -197,6 +203,24 @@ class SimpleTM:
                 'user_id': uid,
                 'game_id': gid,
                 'game_title': gtitle,
+                "permission": perm_map[perm]
+            })
+        return result
+    
+    def GetUsersByGame(self, game_id):
+        c = self.__GetCursor()
+        c.execute('''
+            SELECT p.user_id, p.permission from Permission AS p 
+            JOIN User AS u ON p.user_id=u.id
+            JOIN Game AS g ON p.game_id=g.id
+            WHERE p.game_id=?
+        ''', (game_id,))
+        result = []
+        rows = c.fetchall()
+        perm_map = ['无','只读','读写','管理员']
+        for uid, perm in rows:
+            result.append({
+                'user_id': uid,
                 "permission": perm_map[perm]
             })
         return result
