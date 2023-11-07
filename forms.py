@@ -28,9 +28,6 @@ class RegistrationForm(FlaskForm):
 class NewGameForm(FlaskForm):
     gid = StringField('项目名称', validators=[Length(min=3, max=40)])
     description = StringField('项目描述', validators=[Length(min=0, max=300)])
-    def validate_gid(self, gid):
-        if '/' in gid.data:
-            raise ValidationError('项目名不能包含/')
 
 class UpdatePermissionForm(FlaskForm):
     gid = StringField('项目名称', validators=[Length(min=3, max=40)])

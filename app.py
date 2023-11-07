@@ -118,12 +118,15 @@ def home():
         gid = form.gid.data
         description = form.description.data
         print(gid, description)
-        try:
-            db.AddGameAsUser(user, gid, description)
-            flash(f"项目{gid}创建成功", "success")
-        except Exception as e:
-            print(e)
-            flash("该项目已存在，请换一个项目名", "danger")
+        if '/' in gid:
+            flash(f"项目名不能包含/", "danger")
+        else:
+            try:
+                db.AddGameAsUser(user, gid, description)
+                flash(f"项目{gid}创建成功", "success")
+            except Exception as e:
+                print(e)
+                flash("该项目已存在，请换一个项目名", "danger")
     token = db.GetUserAPIToken(user)[0][0]
     tform = UpdateTokenForm()
     games = db.GetGamesByUser(user)
