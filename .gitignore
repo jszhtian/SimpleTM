@@ -1,6 +1,8 @@
 __pycache__/
 env/
+myenv/
 SimpleTM.db
+*.backup
 node_modules/
 .vscode/
 notes.txt

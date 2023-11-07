@@ -12,12 +12,15 @@ import secrets
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
 
-def genToken():
-    return secrets.token_urlsafe(32)
+def genToken(k=32):
+    return secrets.token_urlsafe(k)
 
 def get_secret_key():
     f = open('.secret', 'r')
     return f.read().strip()
+
+def make_shared_url(user, apitoken, game):
+    return f'simpletm://{user}/{apitoken}/{game}'
 
 app = flask.Flask(__name__)
 app.secret_key = get_secret_key()
@@ -149,7 +152,11 @@ def update_permission():
                 raise RuntimeError("不能更改自己的权限")
             target_perm = form.perm.data
             print(target_uid, gid, target_perm)
+            if target_perm == 3 and target_uid[0] == '_':
+                raise RuntimeError("不能将由系统托管的用户设为管理员")
             assert db.UpdatePermission(target_uid, gid, target_perm)
+            if target_perm == 0 and target_uid[0] == '_':
+                db.DeleteUser(target_uid)
             flash(f'成功更改项目{gid}中用户{target_uid}的权限', 'success')
     except Exception as e:
         flash(str(e), 'danger')
@@ -186,7 +193,23 @@ def update_token():
     except Exception as e:
         flash(str(e), 'danger')
     return redirect(url_for('home'))
-    
+
+@app.route('/home/generateShareURL/<string:game>', methods=['GET'])
+@flask_login.login_required
+def generate_share_url(game):
+    try:
+        user = flask_login.current_user.id
+        temp_user = f'_{user}_share_{genToken(8)}'
+        temp_user_password = genToken(8)
+        temp_user_token = genToken()
+        temp_user_permission = 2 # read/write
+        db = SimpleTM(Config.dbFileName)
+        db.AddUser(temp_user, hash(temp_user_password), temp_user_token)
+        db.UpdatePermission(temp_user, game, temp_user_permission)
+        flash(f'请保存分享链接：{make_shared_url(temp_user, temp_user_token, game)}', 'success')
+    except Exception as e:
+        flash(str(e), 'danger')
+    return redirect(url_for('home'))   
 
 @app.route('/logout')
 def logout():

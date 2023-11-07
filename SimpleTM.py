@@ -146,6 +146,12 @@ class SimpleTM:
     def AddUser(self, user, salt, token):
         return self.__Insert('INSERT INTO User VALUES (?, ?)', None, user, salt) \
             and self.__Insert('INSERT INTO APIToken VALUES (?, ?)', None, user, token)
+    
+    def DeleteUser(self, user):
+        c = self.__GetCursor()
+        c.execute('DELETE FROM User WHERE id=?', (user,))
+        c.execute('DELETE FROM APIToken WHERE user_id=?', (user,))
+        self.__conn.commit()
 
     def UpdateToken(self, user, token):
         c = self.__GetCursor()

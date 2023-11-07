@@ -84,8 +84,9 @@
               </form>
 
               {% set dform = dforms[p['game_id']] %}
+              <a class="btn btn-primary mt-1" href="{{ url_for('generate_share_url', game=p['game_id']) }}">分享链接</a>
               <!-- Button trigger modal -->
-              <button type="button" class="btn btn-danger mt-2" data-toggle="modal" data-target="#deleteGameMoral">
+              <button type="button" class="btn btn-danger mt-1" data-toggle="modal" data-target="#deleteGameMoral">
                 删除项目
               </button>
               <!-- Modal -->
