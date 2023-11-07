@@ -9,6 +9,9 @@ from config import Config
 from permission import must_has_permission, Permission
 import secrets
 
+# change this if deployed to a different domain
+BASE_URL = "simpletm.jscrosoft.com"
+
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
 
@@ -20,7 +23,7 @@ def get_secret_key():
     return f.read().strip()
 
 def make_shared_url(user, apitoken, game):
-    return f'simpletm://{user}/{apitoken}/{game}'
+    return f'simpletm://{BASE_URL}/{user}/{apitoken}/{game}'
 
 app = flask.Flask(__name__)
 app.secret_key = get_secret_key()
