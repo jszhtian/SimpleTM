@@ -9,3 +9,4 @@ function copyToClipboard(id) {
     /* Copy the text inside the text field */
     document.execCommand("copy");
 }
+console.log('main loaded')

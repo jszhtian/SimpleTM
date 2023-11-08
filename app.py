@@ -3,6 +3,7 @@ import hashlib
 import flask
 from flask import request, jsonify, render_template, send_file, flash, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
+from flask_cors import CORS
 import flask_login
 from forms import RegistrationForm, NewGameForm, UpdatePermissionForm, DeleteGameForm, UpdateTokenForm
 from config import Config
@@ -10,8 +11,10 @@ from permission import must_has_permission, Permission
 import secrets
 
 # change this if deployed to a different domain
-PROTOCAL = 'https'
-BASE_URL = "simpletm.jscrosoft.com"
+# PROTOCAL = 'https'
+# BASE_URL = "simpletm.jscrosoft.com"
+PROTOCAL = 'http'
+BASE_URL = "127.0.0.1:8080"
 
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
@@ -28,6 +31,7 @@ def make_shared_url(user, apitoken, game):
 
 app = flask.Flask(__name__)
 app.secret_key = get_secret_key()
+CORS(app)
 auth = HTTPBasicAuth()
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -143,6 +147,18 @@ def home():
     return render_template('home.html', user=user, token=token,
          projects=games, form=form, pforms=pforms, tform=tform,
         dforms=dforms, gameUsers=gameUsers)
+
+@app.route('/project/<string:game>', methods=['GET'])
+@flask_login.login_required
+def project(game):
+    try:
+        user = flask_login.current_user.id
+        db = SimpleTM(Config.dbFileName)
+        token = db.GetUserAPIToken(user)[0][0]
+        return render_template('project.html', user=user, game=game, token=token, base_url=f"{PROTOCAL}://{BASE_URL}")
+    except Exception as e:
+        flash(str(e), "danger")
+        return render_template('index.html')
 
 @app.route('/home/updatePermission', methods=['POST'])
 @flask_login.login_required
