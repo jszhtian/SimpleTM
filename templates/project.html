@@ -6,12 +6,19 @@
   <div style="display: none;" id="secret-game-block">{{ game }}</div>
   <div style="display: none;" id="secret-token-block">{{ token }}</div>
   <div style="display: none;" id="secret-base-url-block">{{ base_url }}</div>
-  <div id="content-table"></div>
-  <div id="form-info"></div>
+  <div id="info-div"></div>
+  <table id="content-table">
+    <thead>
+        <tr>
+            <th>原文</th>
+            <th>译文</th>
+        </tr>
+    </thead>
+    <tbody id="content-table-body">
+    </tbody>
+  </table>
   <div id="new-kv-form">
-    <label for="input-key">原文</label>
     <input id="input-key" name="input-key" type="text">
-    <label for="input-value">译文</label>
     <input  id="input-value" name="input-value" type="text">
     <button id="new-kv-submit" type="submit">添加</button>
   </div>
