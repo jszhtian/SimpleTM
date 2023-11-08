@@ -14,9 +14,9 @@ import os
 # change this if deployed to a different domain
 PROTOCAL = 'https'
 BASE_URL = "simpletm.jscrosoft.com"
-if os.environ['PROTOCAL']:
+if 'PROTOCAL' in os.environ and os.environ['PROTOCAL']:
     PROTOCAL = os.environ['PROTOCAL']
-if os.environ['BASE_URL']:
+if 'BASE_URL' in os.environ and os.environ['BASE_URL']:
     BASE_URL = os.environ['BASE_URL']
 
 def hash(s):
