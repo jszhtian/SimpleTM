@@ -10,6 +10,7 @@ from permission import must_has_permission, Permission
 import secrets
 
 # change this if deployed to a different domain
+PROTOCAL = 'https'
 BASE_URL = "simpletm.jscrosoft.com"
 
 def hash(s):
@@ -23,7 +24,7 @@ def get_secret_key():
     return f.read().strip()
 
 def make_shared_url(user, apitoken, game):
-    return f'simpletm://{BASE_URL}/{user}/{apitoken}/{game}'
+    return f'simpletm://{PROTOCAL}/{BASE_URL}/{user}/{apitoken}/{game}'
 
 app = flask.Flask(__name__)
 app.secret_key = get_secret_key()
