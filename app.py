@@ -11,10 +11,10 @@ from permission import must_has_permission, Permission
 import secrets
 
 # change this if deployed to a different domain
-# PROTOCAL = 'https'
-# BASE_URL = "simpletm.jscrosoft.com"
-PROTOCAL = 'http'
-BASE_URL = "127.0.0.1:8080"
+PROTOCAL = 'https'
+BASE_URL = "simpletm.jscrosoft.com"
+# PROTOCAL = 'http'
+# BASE_URL = "127.0.0.1:8080"
 
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
