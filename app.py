@@ -9,12 +9,15 @@ from forms import RegistrationForm, NewGameForm, UpdatePermissionForm, DeleteGam
 from config import Config
 from permission import must_has_permission, Permission
 import secrets
+import os
 
 # change this if deployed to a different domain
 PROTOCAL = 'https'
 BASE_URL = "simpletm.jscrosoft.com"
-# PROTOCAL = 'http'
-# BASE_URL = "127.0.0.1:8080"
+if os.environ['PROTOCAL']:
+    PROTOCAL = os.environ['PROTOCAL']
+if os.environ['BASE_URL']:
+    BASE_URL = os.environ['BASE_URL']
 
 def hash(s):
     return hashlib.sha256(s.encode()).hexdigest()
