@@ -1,5 +1,6 @@
 
 console.log('project.js loaded')
+const pastedTableRegex = /([^\t]+\t[^\t]+)(\n[^\t]+\t[^\t]+)*/;
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('dom loaded')
     const base_url = document.getElementById('secret-base-url-block').innerHTML;
@@ -7,6 +8,37 @@ document.addEventListener('DOMContentLoaded', async function() {
     const game = document.getElementById('secret-game-block').innerHTML;
     const token = document.getElementById('secret-token-block').innerHTML;
     const infoElem = document.getElementById('info-div');
+
+    const inputKeyElem = document.getElementById('input-key');
+    inputKeyElem.addEventListener('paste', async function(event) {
+        var clipboardData = event.clipboardData || window.clipboardData;
+        var pastedText = clipboardData.getData('text');
+        console.log(pastedText);
+        if (pastedTableRegex.test(pastedText)) {
+            event.preventDefault();
+            const kvs = pastedText.split('\n').map(kv => kv.split('\t').map(s=>s.trim()));
+            
+            for (const [k, v] of kvs) {
+                const skip = false;
+                for (const { raw, translate } of dict) {
+                    if (k === raw) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
+                const r = await makeRequest(encodeURI(`${base_url}/api/insert/${game}/${k}/${v}`));
+                if (r && r.Result == "True") {
+                    addRow(k, v);
+                    dict.push({ "raw": k, "translate": v });
+                }
+            }
+            
+        }
+    });
+
 
     function makeRequest(url) {
         const headers = new Headers({
@@ -114,3 +146,4 @@ document.addEventListener('DOMContentLoaded', async function() {
     })
 
 });
+
